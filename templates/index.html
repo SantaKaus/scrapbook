@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mar n Kaus' Corner</title>
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/styles.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+        body {
+            font-family: 'Dancing Script', cursive, sans-serif;
+            background-color: #f3e5f5;
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+            color: #5e35b1;
+        }
+
+        .container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            padding: 20px;
+            height: 100vh;
+        }
+
+        .image-gallery {
+            flex: 2;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: center;
+            overflow-y: auto;
+            padding-right: 10px;
+            position: relative;
+        }
+
+        .image-container {
+            position: relative;
+            margin: 5px;
+            cursor: pointer;
+            transition: transform 0.3s ease-in-out;
+            z-index: 1;
+        }
+
+        .image-container img {
+            max-width: 150px;
+            max-height: 150px;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            z-index: 1;
+            transform: rotate(calc(var(--angle) * 1deg));
+        }
+
+        .image-container:hover {
+            transform: scale(2) translateZ(0);
+            z-index: 10;
+        }
+
+        .image-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            opacity: 0;
+            transition: opacity 0.3s;
+            z-index: 2;
+            border-radius: 10px;
+        }
+
+        .image-container:hover .image-overlay {
+            opacity: 1;
+        }
+
+        .image-overlay-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #fff;
+            text-align: center;
+        }
+
+        .upload-form {
+            margin-top: 20px;
+            text-align: center;
+            width: 100%;
+        }
+
+        .upload-form input[type="file"] {
+            display: none;
+        }
+
+        .upload-form label {
+            background-color: transparent;
+            color: #5e35b1;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            border-radius: 12px;
+            display: inline-block;
+            transition: background-color 0.3s ease;
+            margin-bottom: 10px;
+            border: 2px solid #7e57c2;
+        }
+
+        .upload-form label:hover {
+            background-color: #9575cd;
+            color: white;
+        }
+
+        .upload-form button {
+            font-family: 'Dancing Script', cursive, sans-serif;
+            background-color: transparent;
+            border: 2px solid #7e57c2;
+            color: #5e35b1;
+            padding: 10px 20px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            margin: 4px 2px;
+            cursor: pointer;
+            border-radius: 12px;
+            transition: background-color 0.3s ease;
+        }
+
+        .upload-form button:hover {
+            background-color: #9575cd;
+            color: white;
+        }
+
+        .spotify-player {
+            flex: 1;
+            padding-left: 10px;
+        }
+
+        iframe {
+            width: 100%;
+            height: 80vh;
+            border-radius: 12px;
+        }
+
+        /* Responsive design for mobile */
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+            }
+
+            .image-gallery {
+                width: 100%;
+                padding-right: 0;
+            }
+
+            .spotify-player {
+                width: 100%;
+                padding-left: 0;
+                padding-top: 20px;
+            }
+
+            iframe {
+                height: 200px;
+            }
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+            color: #673ab7;
+        }
+    </style>
+</head>
+<body>
+    <h1>Mar n Kaus' Corner</h1>
+    <div class="container">
+        <div class="image-gallery" id="image-gallery">
+            <!-- Images will be loaded here -->
+            {% for image in image_data %}
+                <div class="image-container" style="--angle: {{ image.angle }}">
+                    <img src="{{ image.url }}" alt="Image"/>
+                </div>
+            {% endfor %}
+            <div class="upload-form">
+                <input type="file" id="file-upload" accept="image/*,.heic"/>
+                <label for="file-upload">Choose Image</label>
+                <button id="upload-button">Upload</button>
+            </div>
+        </div>
+        <div class="spotify-player">
+            <iframe style="border-radius:12px" src="https://open.spotify.com/embed/playlist/0AgM9l3WbEjTFq2Sm5pTUS?utm_source=generator&theme=0" width="100%" height="352" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
+        </div>
+    </div>
+
+    <script>
+        $(document).ready(function() {
+            // Handle file upload
+            $('#upload-button').click(function() {
+                let fileInput = $('#file-upload')[0];
+                let file = fileInput.files[0];
+                let formData = new FormData();
+                formData.append('file', file);
+
+                $.ajax({
+                    url: '/upload',
+                    type: 'POST',
+                    data: formData,
+                    contentType: false,
+                    processData: false,
+                    success: function(response) {
+                        window.location.reload(); // Reload the page to show the new image
+                    },
+                    error: function(error) {
+                        console.error('File upload error:', error);
+                    }
+                });
+            });
+
+            // Automatically click the 'Play' button once the page is loaded
+            setTimeout(function() {
+                // Look for an element with the title 'Play' and click it
+                let playButton = $('iframe').contents().find('button[data-testid="play-pause-button"]');
+                if (playButton.length) {
+                    playButton.click();
+                } else {
+                    console.error('Play button not found');
+                }
+            }, 3000); // Delay for 3 seconds to ensure iframe content is loaded
+        });
+    </script>
+</body>
+</html>
