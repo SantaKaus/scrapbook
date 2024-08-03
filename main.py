@@ -81,3 +81,6 @@ def uploaded_file(filename):
 if __name__ == '__main__':
     app.run(debug=True)
 
+# /static/	/home/kaus1912/mysite/scrapbook/static/
+# /home/kaus1912/mysite/scrapbook/venv
+# 3.10
